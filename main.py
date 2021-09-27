@@ -3,10 +3,12 @@ import discord
 import json
 from discord.ext import commands
 from discord.ext.commands.core import has_any_role
+from discord.utils import get
 from dotenv import load_dotenv
 from discord_slash import SlashCommand
 
 intents = discord.Intents.all()
+intents.members = True
 bot = commands.Bot(command_prefix="+", intents=intents)
 slash = SlashCommand(bot, sync_commands=True)
 
@@ -41,6 +43,7 @@ async def open_account(user):
     users[str(user.id)]["invite_used"] = ""
     users[str(user.id)]["member_joined_at"] = 0
     users[str(user.id)]["guild_name"] = ""
+    users[str(user.id)]["guild_id"] = 0
     with open("users.json", "w") as f:
         json.dump(users, f)
     return True
@@ -141,9 +144,19 @@ async def on_member_join(member):
         dm_target = await bot.fetch_user(member.id)
         join_embed = discord.Embed(
             title="Welcome to the AYJ Chess Club",
-            description="""To help you get started, we'd like to verifiy you.\n
-          Please use the following command to verify: `/verify` or `+verify`\n\n
-          [Make an account on the club website](https://ayjchess.pythonanywhere.com)""",
+            description="""
+To help you get started, we'd like you to verifiy.
+
+Please use the following command **in the chess server channel** to verify: `+verify <First Name> <Last Name> <School>`
+
+It will not work in DMs.
+          
+Example: `+verify John Doe Deere Public School`
+
+You will recieve a DM from this bot when you have been approved.
+
+Thank you, A.Y. Jackson Chess Club.
+[Website](https://ayjchess.pythonanywhere.com) | [Instagram](https://www.instagram.com/ayjchessclub/)""",
         )
         join_embed.set_thumbnail(
             url="https://ayjchess.pythonanywhere.com/static/AYJ_Chess_Logo.svg"
@@ -153,12 +166,70 @@ async def on_member_join(member):
         pass
 
 
-guild_ids = [777192115951763468]
+admins = [
+    819673575799128095,
+    523265083741306918,
+    502962137472303114,
+    724029571774808104,
+    320963227163033601,
+    621478653955538983,
+    273155974179586048,
+    463417330244780042,
+    716001095872282745
+]
 
 
 @bot.command()
-async def whois(ctx, username):
-    await ctx.send("")
+async def verify(ctx, first_name, last_name, *, school):
+
+    chess_guild = await bot.fetch_guild(777192115951763468)
+    reactions = {"✅": "allow", "❎": "disallow"}
+
+    verified_role = get(chess_guild.roles, name="Verified")
+    member = await chess_guild.fetch_member(ctx.message.author.id)
+    if verified_role in member.roles:
+      await ctx.send("Stop! You're already verified!")
+      return
+
+    def check_response(reaction, user):
+        return user.id in admins and reaction.emoji in reactions
+
+    if first_name and last_name and school is not None:
+        admin_channel = 891774186371027004
+        # admin_channel = 891789171956543511
+        channel_object = await bot.fetch_channel(admin_channel)
+        verify_embed = discord.Embed(
+            title=f"Verification of user {ctx.message.author.name}",
+            description=f"""
+First Name: {first_name}
+Last Name: {last_name}
+School: {school}
+    """,
+        )
+
+        
+
+        while True:
+            sent_message = await channel_object.send(embed=verify_embed)
+            for emoji in reactions:
+                await sent_message.add_reaction(emoji)
+
+            reaction, user = await bot.wait_for("reaction_add", check=check_response)
+
+            if reactions[reaction.emoji] == "allow":
+                await ctx.send("You have been verified. Have fun at the A.Y. Jackson Chess Club!")
+                await ctx.message.author.add_roles(verified_role)
+                break
+            elif reactions[reaction.emoji] == "disallow":
+                await ctx.send("Sorry, you are not allowed in this server.")
+                await channel_object.send(f"User is disallowed by an Admin. Please kick <@{ctx.message.author.id}>")
+                break
+    else:
+        await ctx.send("Incorrect format.")
+
+
+
+guild_ids = [777192115951763468]
 
 
 @bot.command()
@@ -193,6 +264,7 @@ async def me(ctx):
 
     with open("users.json", "w") as f:
         json.dump(users, f)
+
     await ctx.send(
         f"""
 ```
@@ -209,10 +281,17 @@ Who invited you: {users[str(user.id)]["who_invited"]}
 
 
 @bot.command()
-async def dump(ctx):
-    await open_account(ctx.message.author)
+async def dump(ctx, user: discord.User = None):
+    def parse_user(raw_user):
+        if raw_user is not None:
+            return raw_user.id
+        elif raw_user is None:
+            return ctx.message.author.id
+
+    user_id = parse_user(user)
+    user = await bot.fetch_user(user_id)
+    await open_account(user)
     users = await get_user_data()
-    user = ctx.message.author
     await ctx.send(
         f"""
 ```json
@@ -232,8 +311,12 @@ async def setinvitefrom(ctx, person):
         user = ctx.message.author
         try:
             users[str(user.id)]["who_invited"] = str(person)
+            with open("users.json", "w") as f:
+                json.dump(users, f)
         except:
             users[str(user.id)]["who_invited"] = "Alex"
+            with open("users.json", "w") as f:
+                json.dump(users, f)
         await ctx.send("Updated your profile")
         await ctx.send(
             f"""
