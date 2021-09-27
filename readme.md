@@ -1,6 +1,7 @@
 # AYJ chess club discord bot
 
-
+[![Build](https://github.com/AYJ-Chess-Club/chessbot/actions/workflows/build.yml/badge.svg)](https://github.com/AYJ-Chess-Club/chessbot/actions/workflows/build.yml)
+![](https://img.shields.io/discord/777192115951763468?color=blue)
 
 | Command          | Arguments                               | Permissions |
 | ---------------- | --------------------------------------- | ----------- |
