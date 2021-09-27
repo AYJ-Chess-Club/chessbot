@@ -1,5 +1,17 @@
 # AYJ chess club discord bot
 
+
+
+| Command          | Arguments                               | Permissions |
+| ---------------- | --------------------------------------- | ----------- |
+| `+dump`          | `[user]`                                | None        |
+| `+help`          | `[command name]`                        | None        |
+| `+me`            | N/A                                     | None        |
+| `+verify`        | `<first name>` `<last name>` `<school>` | None        |
+| `+setinvitefrom` | `<person name>`                         | Admin       |
+
+\*Note [] means optional, <> means required
+
 ## Contributing
 
 Clone the repo 

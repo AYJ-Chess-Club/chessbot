@@ -126,7 +126,11 @@ async def on_member_join(member):
     for invite in invites_before_join:
         if invite.uses < find_invite_by_code(invites_after_join, invite.code).uses:
             await logging_channel.send(
-                f"User `{member.name}` with id `{member.id}` joined.\nInvite code used: `https://discord.gg/{invite.code}`\nInviter is: {invite.inviter}\nData logged."
+                f"""
+User `{member.name}` with id `{member.id}` joined.
+Invite code used: `https://discord.gg/{invite.code}`
+Inviter is: {invite.inviter}
+Data logged."""
             )
             invites[member.guild.id] = invites_after_join
             users[str(user.id)]["who_invited"] = str(invite.inviter)
@@ -149,7 +153,7 @@ To help you get started, we'd like you to verifiy.
 Please use the following command **in the chess server channel** to verify: `+verify <First Name> <Last Name> <School>`
 
 It will not work in DMs.
-          
+
 Example: `+verify John Doe Deere Public School`
 
 You will recieve a DM from this bot when you have been approved.
@@ -161,7 +165,7 @@ Thank you, A.Y. Jackson Chess Club.
             url="https://ayjchess.pythonanywhere.com/static/AYJ_Chess_Logo.svg"
         )
         await dm_target.send(embed=join_embed)
-    except:
+    except Exception:
         pass
 
 
@@ -272,7 +276,7 @@ Your profile:
 
 Name: {users[str(user.id)]["name"]}
 Guild: {users[str(user.id)]["guild_name"]} with id of {users[str(user.id)]["guild_id"]}
-Joined guild: {users[str(user.id)]["member_joined_at"]} 
+Joined guild: {users[str(user.id)]["member_joined_at"]}
 Who invited you: {users[str(user.id)]["who_invited"]}
 
 ```
@@ -313,7 +317,7 @@ async def setinvitefrom(ctx, person):
             users[str(user.id)]["who_invited"] = str(person)
             with open("users.json", "w") as f:
                 json.dump(users, f)
-        except:
+        except Exception:
             users[str(user.id)]["who_invited"] = "Alex"
             with open("users.json", "w") as f:
                 json.dump(users, f)
