@@ -99,8 +99,7 @@ def find_invite_by_code(invite_list, code):
             return inv
 
 
-# loggin_channel = 891774186371027004
-loggin_channel = 891789171956543511
+loggin_channel = 891774186371027004
 
 
 @bot.event
@@ -175,7 +174,7 @@ admins = [
     621478653955538983,
     273155974179586048,
     463417330244780042,
-    716001095872282745
+    716001095872282745,
 ]
 
 
@@ -188,8 +187,8 @@ async def verify(ctx, first_name, last_name, *, school):
     verified_role = get(chess_guild.roles, name="Verified")
     member = await chess_guild.fetch_member(ctx.message.author.id)
     if verified_role in member.roles:
-      await ctx.send("Stop! You're already verified!")
-      return
+        await ctx.send("Stop! You're already verified!")
+        return
 
     def check_response(reaction, user):
         return user.id in admins and reaction.emoji in reactions
@@ -207,8 +206,6 @@ School: {school}
     """,
         )
 
-        
-
         while True:
             sent_message = await channel_object.send(embed=verify_embed)
             for emoji in reactions:
@@ -217,16 +214,19 @@ School: {school}
             reaction, user = await bot.wait_for("reaction_add", check=check_response)
 
             if reactions[reaction.emoji] == "allow":
-                await ctx.send("You have been verified. Have fun at the A.Y. Jackson Chess Club!")
+                await ctx.send(
+                    "You have been verified. Have fun at the A.Y. Jackson Chess Club!"
+                )
                 await ctx.message.author.add_roles(verified_role)
                 break
             elif reactions[reaction.emoji] == "disallow":
                 await ctx.send("Sorry, you are not allowed in this server.")
-                await channel_object.send(f"User is disallowed by an Admin. Please kick <@{ctx.message.author.id}>")
+                await channel_object.send(
+                    f"User is disallowed by an Admin. Please kick <@{ctx.message.author.id}>"
+                )
                 break
     else:
         await ctx.send("Incorrect format.")
-
 
 
 guild_ids = [777192115951763468]
